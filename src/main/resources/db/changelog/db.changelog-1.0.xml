@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="1" author="Karthik">
+        <sql>
+            CREATE TABLE user (
+            id BIGINT NOT NULL AUTO_INCREMENT,
+            username VARCHAR(255) NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            role VARCHAR(255) NOT NULL,
+            CONSTRAINT PK_id PRIMARY KEY (id)
+            );
+        </sql>
+        <rollback>
+            DROP TABLE user;
+        </rollback>
+    </changeSet>
+    <changeSet id="2" author="Karthik">
+        <sql>
+            CREATE TABLE course (
+            id BIGINT NOT NULL AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            mentor_id BIGINT NOT NULL,
+            CONSTRAINT PK_id PRIMARY KEY (id),
+            CONSTRAINT fk_user_course FOREIGN KEY (mentor_id) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE
+            );
+        </sql>
+        <rollback>
+            DROP TABLE course;
+        </rollback>
+    </changeSet>
+
+    <changeSet id="3" author="Karthik">
+        <sql>
+            CREATE TABLE course_trainee (
+            id BIGINT NOT NULL AUTO_INCREMENT,
+            trainee_id BIGINT NOT NULL,
+            course_id BIGINT NOT NULL,
+            CONSTRAINT PK_id PRIMARY KEY (id),
+            CONSTRAINT fk_trainee_user FOREIGN KEY (trainee_id) REFERENCES user (id) ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT fk_course_cs FOREIGN KEY (course_id) REFERENCES course (id) ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT uq_cs UNIQUE (trainee_id, course_id)
+        );
+        </sql>
+        <rollback>
+            DROP TABLE course_trainee
+        </rollback>
+    </changeSet>
+
+    <changeSet id="4" author="Karthik">
+        <sql>
+            INSERT INTO user (username, name, password, role) values ("user1", "user Tom", "test", "MENTOR");
+            INSERT INTO user (username, name, password, role) values ("user2", "user Adam", "test", "MENTOR");
+            INSERT INTO user (username, name, password, role) values ("user3", "user Jon", "test", "MENTOR");
+        </sql>
+        <rollback>
+            TRUNCATE TABLE user;
+        </rollback>
+    </changeSet>
+
+    <changeSet id="5" author="Karthik">
+        <sql>
+            INSERT INTO course (name, mentor_id) values ("JAVA-101", (select id from user where username = "user1"));
+            INSERT INTO course (name, mentor_id) values ("JAVA-102", (select id from user where username = "user2"));
+            INSERT INTO course (name, mentor_id) values ("ANGULAR-101", (select id from user where username = "user3"));
+        </sql>
+        <rollback>
+            TRUNCATE TABLE course;
+        </rollback>
+
+
+    </changeSet>
+
+</databaseChangeLog>
